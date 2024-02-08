@@ -1,7 +1,7 @@
-import React, { useReducer, useContext, useEffect } from 'react';
+import React, { useReducer, useContext, useEffect } from "react";
 
-import reducer from './reducer';
-import axios from 'axios';
+import reducer from "./reducer";
+import axios from "axios";
 import {
   DISPLAY_ALERT,
   CLEAR_ALERT,
@@ -32,37 +32,39 @@ import {
   CHANGE_PAGE,
   GET_CURRENT_USER_BEGIN,
   GET_CURRENT_USER_SUCCESS,
-} from './actions';
+} from "./actions";
 
 const initialState = {
   userLoading: true,
   isLoading: false,
   showAlert: false,
-  alertText: '',
-  alertType: '',
+  alertText: "",
+  alertType: "",
   user: null,
-  userLocation: '',
+  userLocation: "",
   showSidebar: false,
   isEditing: false,
-  editJobId: '',
-  position: '',
-  company: '',
-  jobLocation: '',
-  jobTypeOptions: ['full-time', 'part-time', 'remote', 'internship'],
-  jobType: 'full-time',
-  statusOptions: ['interview', 'declined', 'pending'],
-  status: 'pending',
+  editJobId: "",
+  position: "",
+  company: "",
+  jobUrl: "",
+  updates: [],
+  jobLocation: "",
+  jobTypeOptions: ["full-time", "part-time", "remote", "internship"],
+  jobType: "full-time",
+  statusOptions: ["interview", "declined", "pending", "not_apply"],
+  status: "pending",
   jobs: [],
   totalJobs: 0,
   numOfPages: 1,
   page: 1,
   stats: {},
   monthlyApplications: [],
-  search: '',
-  searchStatus: 'all',
-  searchType: 'all',
-  sort: 'latest',
-  sortOptions: ['latest', 'oldest', 'a-z', 'z-a'],
+  search: "",
+  searchStatus: "all",
+  searchType: "all",
+  sort: "latest",
+  sortOptions: ["latest", "oldest", "a-z", "z-a"],
 };
 
 const AppContext = React.createContext();
@@ -72,7 +74,7 @@ const AppProvider = ({ children }) => {
 
   // axios
   const authFetch = axios.create({
-    baseURL: '/api/v1',
+    baseURL: "/api/v1",
   });
   // request
 
@@ -128,13 +130,13 @@ const AppProvider = ({ children }) => {
   };
 
   const logoutUser = async () => {
-    await authFetch.get('/auth/logout');
+    await authFetch.get("/auth/logout");
     dispatch({ type: LOGOUT_USER });
   };
   const updateUser = async (currentUser) => {
     dispatch({ type: UPDATE_USER_BEGIN });
     try {
-      const { data } = await authFetch.patch('/auth/updateUser', currentUser);
+      const { data } = await authFetch.patch("/auth/updateUser", currentUser);
       const { user, location } = data;
 
       dispatch({
@@ -161,10 +163,20 @@ const AppProvider = ({ children }) => {
   const createJob = async () => {
     dispatch({ type: CREATE_JOB_BEGIN });
     try {
-      const { position, company, jobLocation, jobType, status } = state;
-      await authFetch.post('/jobs', {
+      const {
         position,
         company,
+        jobUrl,
+        updates,
+        jobLocation,
+        jobType,
+        status,
+      } = state;
+      await authFetch.post("/jobs", {
+        position,
+        company,
+        jobUrl,
+        updates,
         jobLocation,
         jobType,
         status,
@@ -213,9 +225,19 @@ const AppProvider = ({ children }) => {
     dispatch({ type: EDIT_JOB_BEGIN });
 
     try {
-      const { position, company, jobLocation, jobType, status } = state;
+      const {
+        position,
+        company,
+        jobUrl,
+        updates,
+        jobLocation,
+        jobType,
+        status,
+      } = state;
       await authFetch.patch(`/jobs/${state.editJobId}`, {
         company,
+        jobUrl,
+        updates,
         position,
         jobLocation,
         jobType,
@@ -249,7 +271,7 @@ const AppProvider = ({ children }) => {
   const showStats = async () => {
     dispatch({ type: SHOW_STATS_BEGIN });
     try {
-      const { data } = await authFetch('/jobs/stats');
+      const { data } = await authFetch("/jobs/stats");
       dispatch({
         type: SHOW_STATS_SUCCESS,
         payload: {
@@ -272,7 +294,7 @@ const AppProvider = ({ children }) => {
   const getCurrentUser = async () => {
     dispatch({ type: GET_CURRENT_USER_BEGIN });
     try {
-      const { data } = await authFetch('/auth/getCurrentUser');
+      const { data } = await authFetch("/auth/getCurrentUser");
       const { user, location } = data;
 
       dispatch({
